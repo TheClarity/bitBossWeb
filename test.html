@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html>
+   <head>
+   <style type="text/css">
+.hidden {
+display: none;
+}
+</style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+  <script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
+      <script type="text/javascript">
+window.CLIENT_ID = 'jucl44orsw1z6t0io4yhkrm84lra4n';
+var username;
+var id;
+$(function() {
+
+  // Initialize. If we are already logged in, there is no
+  // need for the connect button
+  Twitch.init({clientId: CLIENT_ID}, function(error, status) {
+    if (status.authenticated) {
+      // we're logged in :)
+      $('.status input').val('Logged in! Allowed scope: ' + status.scope);
+      // Show the data for logged-in users
+      $('.authenticated').removeClass('hidden');
+      Twitch.api({method: 'user'}, function(error, user) {
+        id = user._id;
+        WebSocketTest();
+        console.log(id);
+      });
+    } else {
+      $('.authenticate').removeClass('hidden');
+    }
+  });
+
+
+  $('.twitch-connect').click(function() {
+    Twitch.login({
+      scope: ['user_read']
+    });
+  })
+
+  $('#logout').click(function() {
+    Twitch.logout();
+    window.location = window.location.pathname;
+  })
+});
+var ping = {
+"type": "PING",
+"data": {
+"topics": []
+}
+}
+         function WebSocketTest()
+         {
+            if ("WebSocket" in window)
+            {
+               console.log("WebSocket is supported by your Browser!");
+
+               // Let us open a web socket
+               var ws = new WebSocket("wss://pubsub-edge.twitch.tv");
+
+               ws.onopen = function()
+               {
+                  // Web Socket is connected, send data using send()
+
+var listen = {
+"type": "LISTEN",
+"data": {
+  "topics": ["chat_moderator_actions."+id],
+  "auth_token": "wgjt2tvcqyxs8e67mf0jxhu1yl9stg"
+}
+}
+var test = {
+  "type": "LISTEN",
+  "nonce": "1232422141",
+  "data": {
+    "topics": ["channel-bitsevents.54151498"],
+    "auth_token": "wgjt2tvcqyxs8e67mf0jxhu1yl9stg"
+  }
+}
+                  ws.send(JSON.stringify(ping));
+                  ws.send(JSON.stringify(listen));
+                  console.log("Message is sent...");
+               };
+
+               ws.onmessage = function (evt)
+               {
+                  var received_msg = JSON.parse(evt.data);
+                  console.log(received_msg);
+               };
+
+               ws.onclose = function()
+               {
+                  // websocket is closed.
+                  console.log("Connection is closed...");
+               };
+            }
+
+            else
+            {
+               // The browser doesn't support WebSocket
+               console.log("WebSocket NOT supported by your Browser!");
+            }
+            setInterval(function pingTwitch(){
+               ws.send(JSON.stringify(ping));
+               console.log("ping");
+             }, 294000);
+         }
+
+      </script>
+      <div class="authenticate hidden">
+                <img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" class="twitch-connect" href="#" />
+              </div>
+              <div class="authenticated hidden">
+                <button id='logout'>Log Out</button>
+              </div>
+   </head>
+   <body>
+
+
+   </body>
+</html>
